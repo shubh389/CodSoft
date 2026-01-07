@@ -57,9 +57,6 @@ def extract_features(image_path: str) -> np.ndarray:
     feature = vgg.predict(image, verbose=0)
     return feature[0]
 
-# -------------------------------
-# STEP 3: Load Captions
-# -------------------------------
 def load_captions(file_path: str) -> Dict[str, List[str]]:
     captions: Dict[str, List[str]] = {}
     with open(file_path, 'r') as f:
