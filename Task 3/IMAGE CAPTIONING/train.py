@@ -1,12 +1,13 @@
 import os
 from typing import Dict, List
 import numpy as np
+from numpy.typing import NDArray
 
-# Keras 3 compatibility: use tensorflow.keras.utils instead of deprecated tf.keras.preprocessing
-from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
-from tensorflow.keras.utils import load_img, img_to_array, pad_sequences, to_categorical
-from tensorflow.keras.layers import Input, Dense, LSTM, Embedding, Add
-from tensorflow.keras.models import Model, load_model
+
+from keras.applications.vgg16 import VGG16, preprocess_input
+from keras.utils import load_img, img_to_array, pad_sequences, to_categorical
+from keras.layers import Input, Dense, LSTM, Embedding, Add
+from keras.models import Model, load_model
 
 
 class SimpleTokenizer:
@@ -27,7 +28,6 @@ class SimpleTokenizer:
             for token in text.strip().split():
                 if token:
                     vocab[token] = vocab.get(token, 0) + 1
-        # Assign indices by frequency (desc) then alphabet
         sorted_tokens = sorted(vocab.items(), key=lambda x: (-x[1], x[0]))
         for idx, (tok, _) in enumerate(sorted_tokens, start=1):
             self.word_index[tok] = idx
@@ -41,23 +41,19 @@ class SimpleTokenizer:
                 idx = self.word_index.get(token)
                 if idx is not None:
                     seq.append(idx)
-                # silently drop OOV tokens
+                
             sequences.append(seq)
         return sequences
 
 
-# -------------------------------
-# STEP 1: Load VGG16 CNN Model
-# -------------------------------
+
 vgg = VGG16(weights="imagenet")
-# Use the second-to-last layer (fc2) as 4096-dim feature vector
+
 vgg = Model(inputs=vgg.inputs, outputs=vgg.layers[-2].output)
 
 
-# -------------------------------
-# STEP 2: Extract Image Features
-# -------------------------------
-def extract_features(image_path: str) -> np.ndarray:
+
+def extract_features(image_path: str) -> NDArray[np.float32] | NDArray[np.float64] | NDArray[np.int32]:
     image = load_img(image_path, target_size=(224, 224))
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
@@ -66,9 +62,6 @@ def extract_features(image_path: str) -> np.ndarray:
     return feature[0]
 
 
-# -------------------------------
-# STEP 3: Load Captions
-# -------------------------------
 def load_captions(file_path: str) -> Dict[str, List[str]]:
     captions: Dict[str, List[str]] = {}
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -81,24 +74,21 @@ def load_captions(file_path: str) -> Dict[str, List[str]]:
             captions.setdefault(image_id, []).append(caption)
     return captions
 
-
-# Dataset paths (aligned to your workspace: dataset/image/)
 BASE_DIR = os.path.dirname(__file__)
 DATASET_DIR = os.path.join(BASE_DIR, "dataset")
 CAPTIONS_PATH = os.path.join(DATASET_DIR, "captions.txt")
-IMAGES_DIR = os.path.join(DATASET_DIR, "image")  # NOTE: "image" (singular) per workspace
+IMAGES_DIR = os.path.join(DATASET_DIR, "image")  
 
 
 def build_and_train() -> tuple[Model, SimpleTokenizer, int]:
-    # Load captions if available
+
     if not os.path.exists(CAPTIONS_PATH):
         print(f"Warning: Missing captions file: {CAPTIONS_PATH}. Skipping training.")
         raise FileNotFoundError("captions.txt not found")
 
     captions = load_captions(CAPTIONS_PATH)
 
-    # Extract features for all images that have captions
-    image_features: Dict[str, np.ndarray] = {}
+    image_features: Dict[str, NDArray[np.float32] | NDArray[np.float64] | NDArray[np.int32]] = {}
     for img in captions.keys():
         path = os.path.join(IMAGES_DIR, img)
         if not os.path.exists(path):
@@ -106,7 +96,6 @@ def build_and_train() -> tuple[Model, SimpleTokenizer, int]:
             continue
         image_features[img] = extract_features(path)
 
-    # Tokenize captions
     all_captions: List[str] = []
     for caps in captions.values():
         all_captions.extend(caps)
@@ -117,10 +106,9 @@ def build_and_train() -> tuple[Model, SimpleTokenizer, int]:
     vocab_size: int = len(tokenizer.word_index) + 1
     max_length: int = max((len(c.split()) for c in all_captions), default=2)
 
-    # Create training data
-    x1_list: List[np.ndarray] = []
-    x2_list: List[np.ndarray] = []
-    y_list: List[np.ndarray] = []
+    x1_list: List[NDArray[np.float32] | NDArray[np.float64] | NDArray[np.int32]] = []
+    x2_list: List[NDArray[np.int32]] = []
+    y_list: List[NDArray[np.float32]] = []
 
     for img, caps in captions.items():
         feature = image_features.get(img)
@@ -139,9 +127,9 @@ def build_and_train() -> tuple[Model, SimpleTokenizer, int]:
                 x2_list.append(in_seq)
                 y_list.append(out_seq)
 
-    x1 = np.array(x1_list)
-    x2 = np.array(x2_list)
-    y = np.array(y_list)
+    x1: NDArray[np.float32] | NDArray[np.float64] | NDArray[np.int32] = np.array(x1_list)
+    x2: NDArray[np.int32] = np.array(x2_list)
+    y: NDArray[np.float32] = np.array(y_list)
 
     # Build model
     image_input = Input(shape=(4096,))
@@ -173,7 +161,7 @@ def load_or_build() -> tuple[Model, SimpleTokenizer, int]:
     if os.path.exists(model_path):
         print("Loading existing model...")
         model = load_model(model_path)
-        # Rebuild tokenizer from captions for generation consistency
+        
         if os.path.exists(CAPTIONS_PATH):
             caps = load_captions(CAPTIONS_PATH)
             all_caps: List[str] = []
@@ -192,7 +180,7 @@ def load_or_build() -> tuple[Model, SimpleTokenizer, int]:
         return build_and_train()
 
 
-def generate_caption(model: Model, tokenizer: SimpleTokenizer, max_length: int, photo: np.ndarray) -> str:
+def generate_caption(model: Model, tokenizer: SimpleTokenizer, max_length: int, photo: NDArray[np.float32] | NDArray[np.float64] | NDArray[np.int32]) -> str:
     text = "startseq"
     for _ in range(max_length):
         seq = tokenizer.texts_to_sequences([text])[0]
