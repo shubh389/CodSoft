@@ -111,9 +111,7 @@ else:
     # Minimal sequence length for fallback tokenizer
     max_length: int = 2
 
-# -------------------------------
-# STEP 6: Create Training Data
-# -------------------------------
+
 x1_list: List[np.ndarray] = []
 x2_list: List[np.ndarray] = []
 y_list: List[np.ndarray] = []
