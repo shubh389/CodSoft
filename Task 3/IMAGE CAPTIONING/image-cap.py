@@ -46,9 +46,7 @@ class SimpleTokenizer:
 vgg = VGG16(weights="imagenet")
 vgg = Model(inputs=vgg.inputs, outputs=vgg.layers[-2].output)
 
-# -------------------------------
-# STEP 2: Extract Image Features
-# -------------------------------
+
 def extract_features(image_path: str) -> np.ndarray:
     image = load_img(image_path, target_size=(224, 224))
     image = img_to_array(image)
