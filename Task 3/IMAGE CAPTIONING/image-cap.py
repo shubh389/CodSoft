@@ -101,14 +101,12 @@ tokenizer: SimpleTokenizer = SimpleTokenizer()
 if all_captions:
     tokenizer.fit_on_texts(all_captions)
 else:
-    # Initialize tokenizer minimally to avoid failures later
     tokenizer.fit_on_texts(["startseq endseq"])
 
 vocab_size: int = len(tokenizer.word_index) + 1
 if all_captions:
     max_length: int = max(len(c.split()) for c in all_captions)
 else:
-    # Minimal sequence length for fallback tokenizer
     max_length: int = 2
 
 
