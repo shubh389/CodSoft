@@ -81,18 +81,14 @@ if os.path.exists(CAPTIONS_PATH):
 else:
     print(f"Warning: Missing captions file: {CAPTIONS_PATH}. Skipping training.")
 
-# -------------------------------
-# STEP 4: Extract Features for All Images
-# -------------------------------
+
 image_features: Dict[str, np.ndarray] = {}
 if os.path.isdir(IMAGES_DIR) and captions:
     for img in captions.keys():
         path = os.path.join(IMAGES_DIR, img)
         image_features[img] = extract_features(path)
 
-# -------------------------------
-# STEP 5: Tokenize Captions
-# -------------------------------
+
 all_captions: List[str] = []
 for caps in captions.values():
     all_captions.extend(caps)
