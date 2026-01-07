@@ -1,9 +1,0 @@
-{
-  "typeCheckingMode": "basic",
-  "useLibraryCodeForTypes": true,
-  "reportMissingImports": true,
-  "reportUnknownVariableType": false,
-  "reportUnknownMemberType": false,
-  "reportUnknownParameterType": false,
-  "reportUnknownArgumentType": false
-}
