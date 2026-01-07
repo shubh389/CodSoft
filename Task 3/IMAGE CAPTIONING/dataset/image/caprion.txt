@@ -1,0 +1,2 @@
+img1.jpg startseq a dog is running endseq
+img2.jpg startseq a man is riding a bike endseq
