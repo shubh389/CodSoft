@@ -8,21 +8,20 @@ from tensorflow.keras.utils import load_img, img_to_array, pad_sequences, to_cat
 from tensorflow.keras.layers import Input, Dense, LSTM, Embedding, Add
 from tensorflow.keras.models import Model, load_model
 
-# Minimal tokenizer compatible with Keras 3 (replaces deprecated tf.keras.preprocessing)
+
 class SimpleTokenizer:
     def __init__(self) -> None:
         self.word_index: Dict[str, int] = {}
         self.index_word: Dict[int, str] = {}
 
     def fit_on_texts(self, texts: List[str]) -> None:
-        # Build vocabulary from whitespace-separated tokens
+        
         vocab: Dict[str, int] = {}
         for text in texts:
             for token in text.strip().split():
                 if token:
                     vocab[token] = vocab.get(token, 0) + 1
-        # Assign indices starting from 1 (0 reserved for padding)
-        # Keep deterministic ordering by frequency then alphabet
+        
         sorted_tokens = sorted(vocab.items(), key=lambda x: (-x[1], x[0]))
         for idx, (tok, _) in enumerate(sorted_tokens, start=1):
             self.word_index[tok] = idx
@@ -36,13 +35,11 @@ class SimpleTokenizer:
                 idx = self.word_index.get(token)
                 if idx is not None:
                     seq.append(idx)
-                # silently drop OOV tokens
+                
             sequences.append(seq)
         return sequences
 
-# -------------------------------
-# STEP 1: Load VGG16 CNN Model
-# -------------------------------
+
 vgg = VGG16(weights="imagenet")
 vgg = Model(inputs=vgg.inputs, outputs=vgg.layers[-2].output)
 
