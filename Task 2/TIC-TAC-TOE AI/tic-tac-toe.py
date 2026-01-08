@@ -3,13 +3,11 @@ import math
 # Initialize board
 board = [" " for _ in range(9)]
 
-# Print board
 def print_board():
     for row in [board[i:i+3] for i in range(0, 9, 3)]:
         print("|".join(row))
         print("-" * 5)
 
-# Check winner
 def check_winner(player: str) -> bool:
     win_combos = [
         [0,1,2], [3,4,5], [6,7,8],
