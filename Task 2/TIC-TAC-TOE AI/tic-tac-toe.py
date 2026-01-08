@@ -67,7 +67,6 @@ def ai_move() -> None:
     if best_move is not None:
         board[best_move] = "O"
 
-# Human move
 def human_move() -> None:
     while True:
         move = int(input("Enter your move (0-8): "))
@@ -77,7 +76,6 @@ def human_move() -> None:
         else:
             print("Invalid move. Try again.")
 
-# Game loop
 print("You are X | AI is O")
 print_board()
 
