@@ -18,7 +18,7 @@ def check_winner(player: str) -> bool:
     ]
     return any(all(board[i] == player for i in combo) for combo in win_combos)
 
-# Check draw
+
 def is_draw() -> bool:
     return " " not in board
 def minimax(is_maximizing: bool) -> float:
