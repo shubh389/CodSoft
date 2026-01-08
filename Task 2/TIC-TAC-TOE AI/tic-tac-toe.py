@@ -50,7 +50,7 @@ def minimax(is_maximizing: bool) -> float:
                 best_score = min(score, best_score)
         return best_score
 
-# AI move
+
 def ai_move() -> None:
     best_score = -math.inf
     best_move: int | None = None
