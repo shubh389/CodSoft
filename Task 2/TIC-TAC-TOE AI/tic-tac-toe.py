@@ -21,8 +21,6 @@ def check_winner(player: str) -> bool:
 # Check draw
 def is_draw() -> bool:
     return " " not in board
-
-# Minimax Algorithm
 def minimax(is_maximizing: bool) -> float:
     if check_winner("O"):
         return 1
